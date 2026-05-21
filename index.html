@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buku Jual Beli Mobil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-3xl shadow-xl p-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">Buku Jual Beli Mobil</h1>
+          <p class="text-gray-500 mt-1">Aplikasi CRUD sederhana untuk data transaksi mobil</p>
+        </div>
+
+        <button onclick="resetForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl font-semibold transition">
+          + Tambah Data Baru
+        </button>
+      </div>
+
+      <!-- FORM -->
+      <div class="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Form Transaksi</h2>
+
+        <form id="mobilForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <input type="hidden" id="editIndex" />
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Nama Pembeli</label>
+            <input type="text" id="nama" class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Merk Mobil</label>
+            <input type="text" id="merk" class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Tipe Mobil</label>
+            <input type="text" id="tipe" class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Tahun</label>
+            <input type="number" id="tahun" class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Harga</label>
+            <input type="number" id="harga" class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Tanggal Transaksi</label>
+            <input type="date" id="tanggal" class="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+          </div>
+
+          <div class="md:col-span-2 lg:col-span-3 flex gap-3 mt-2">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-semibold transition">
+              Simpan Data
+            </button>
+
+            <button type="button" onclick="resetForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-2xl font-semibold transition">
+              Reset
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="mb-5">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Cari nama pembeli atau mobil..."
+          class="w-full border rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onkeyup="renderTable()"
+        >
+      </div>
+
+      <!-- TABLE -->
+      <div class="overflow-x-auto rounded-2xl border border-gray-200">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-blue-600 text-white">
+            <tr>
+              <th class="p-4">No</th>
+              <th class="p-4">Pembeli</th>
+              <th class="p-4">Merk</th>
+              <th class="p-4">Tipe</th>
+              <th class="p-4">Tahun</th>
+              <th class="p-4">Harga</th>
+              <th class="p-4">Tanggal</th>
+              <th class="p-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody id="tableBody" class="bg-white">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dataMobil = JSON.parse(localStorage.getItem('dataMobil')) || [];
+
+    const form = document.getElementById('mobilForm');
+    const tableBody = document.getElementById('tableBody');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const editIndex = document.getElementById('editIndex').value;
+
+      const data = {
+        nama: document.getElementById('nama').value,
+        merk: document.getElementById('merk').value,
+        tipe: document.getElementById('tipe').value,
+        tahun: document.getElementById('tahun').value,
+        harga: document.getElementById('harga').value,
+        tanggal: document.getElementById('tanggal').value,
+      };
+
+      if (editIndex === '') {
+        dataMobil.push(data);
+      } else {
+        dataMobil[editIndex] = data;
+      }
+
+      saveData();
+      renderTable();
+      resetForm();
+    });
+
+    function saveData() {
+      localStorage.setItem('dataMobil', JSON.stringify(dataMobil));
+    }
+
+    function renderTable() {
+      const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+      tableBody.innerHTML = '';
+
+      const filteredData = dataMobil.filter(item =>
+        item.nama.toLowerCase().includes(keyword) ||
+        item.merk.toLowerCase().includes(keyword) ||
+        item.tipe.toLowerCase().includes(keyword)
+      );
+
+      if (filteredData.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center p-6 text-gray-500">
+              Data tidak ditemukan
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filteredData.forEach((item, index) => {
+        tableBody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50 transition">
+            <td class="p-4">${index + 1}</td>
+            <td class="p-4 font-medium">${item.nama}</td>
+            <td class="p-4">${item.merk}</td>
+            <td class="p-4">${item.tipe}</td>
+            <td class="p-4">${item.tahun}</td>
+            <td class="p-4">Rp ${Number(item.harga).toLocaleString('id-ID')}</td>
+            <td class="p-4">${item.tanggal}</td>
+            <td class="p-4">
+              <div class="flex justify-center gap-2">
+                <button onclick="editData(${dataMobil.indexOf(item)})" class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-xl">
+                  Edit
+                </button>
+
+                <button onclick="hapusData(${dataMobil.indexOf(item)})" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
+                  Hapus
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function editData(index) {
+      const item = dataMobil[index];
+
+      document.getElementById('editIndex').value = index;
+      document.getElementById('nama').value = item.nama;
+      document.getElementById('merk').value = item.merk;
+      document.getElementById('tipe').value = item.tipe;
+      document.getElementById('tahun').value = item.tahun;
+      document.getElementById('harga').value = item.harga;
+      document.getElementById('tanggal').value = item.tanggal;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hapusData(index) {
+      if (confirm('Yakin ingin menghapus data ini?')) {
+        dataMobil.splice(index, 1);
+        saveData();
+        renderTable();
+      }
+    }
+
+    function resetForm() {
+      form.reset();
+      document.getElementById('editIndex').value = '';
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
